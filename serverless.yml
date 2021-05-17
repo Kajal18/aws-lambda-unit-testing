@@ -1,0 +1,113 @@
+service: dynamodb-table-serverless
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: prod
+  environment:
+    USERS_TABLE: users-${opt:stage,self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["UsersTable", "Arn" ] }
+      # Resource: "arn:aws:dynamodb:${opt:region,self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
+
+plugins:
+  - serverless-offline
+
+custom:
+  allowHeaders:
+    - Accept
+    - Content-Type
+    - Content-Length
+    - Authorization
+    - X-Api-Key
+    - app_userId
+    - app_userName
+  serverless-offline:
+    httpPort: 9090
+
+functions:
+  addUser:
+    handler: usersApi/createUser.handler
+    events:
+      - http:
+          path: users
+          method: post
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+  getUser:
+    handler: usersApi/getUser.handler
+    events:
+      - http:
+          path: users/{user_id}
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  getUsers:
+    handler: usersApi/getUsers.handler
+    events:
+      - http:
+          path: users
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+         
+  updateUser:
+    handler: usersApi/updateUser.handler
+    events:
+      - http:
+          path: users/{user_id}
+          method: patch
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  deleteUser:
+    handler: usersApi/deleteUser.handler
+    events:
+      - http:
+          path: users
+          method: delete
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  
+  authorize:
+    handler: usersApi/authenticate.handler
+  
+  authentication:
+    handler: usersApi/getToken.handler
+    events:
+      - http:
+          path: authentication
+          method: post
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
