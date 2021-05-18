@@ -5,7 +5,7 @@ provider:
   runtime: nodejs12.x
   stage: prod
   environment:
-    USERS_TABLE: users-${opt:stage,self:provider.stage}
+    USERS_TABLE: user-${opt:stage,self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
