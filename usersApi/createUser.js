@@ -1,36 +1,40 @@
-const AWS = require('aws-sdk');
 const uuid = require('uuid').v4;
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
-AWS.config.update({ region: 'us-east-1' });
-
-const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.USERS_TABLE;
+const OrgTableName = process.env.ORG_TABLE;
+const { createItem, getItem } = require('../dynamodbQueries');
 
 exports.handler = async (event) => {
   try {
     let item = JSON.parse(event.body);
-    item.user_id = uuid();
-    item.user_name = item.user_name;
+    item.id = uuid();
     item.password = bcrypt.hashSync(item.password, 8);
     item.timestamp = moment().unix();
-    const data = await dynamodb
-      .put({
-        TableName: tableName,
-        Item: item,
-      })
-      .promise();
+    item.orgId = item.orgId || 0;
+    if (item.orgId) {
+      const params = {
+        TableName: OrgTableName,
+        KeyConditionExpression: `id = :orgId`,
+        ExpressionAttributeValues: {
+          ':orgId': orgId,
+        },
+      };
+      const orgInstance = await getItem(params);
+      if (!orgInstance) {
+        throw new Error('Organization not found!');
+      }
+    }
+    const data = await createItem({
+      TableName: tableName,
+      Item: item,
+    });
     return {
       statusCode: 200,
-      body: JSON.stringify(item),
+      body: item,
     };
   } catch (err) {
-    console.log('Error', err);
-    return {
-      statuscode: err.statusCode ? err.statusCode : 500,
-      body: JSON.stringify({
-        error: err.message ? err.message : 'Something went wrong!',
-      }),
-    };
+    console.log({ err });
+    return new Error(err);
   }
 };

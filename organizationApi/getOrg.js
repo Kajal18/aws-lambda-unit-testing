@@ -1,24 +1,23 @@
-const tableName = process.env.USERS_TABLE;
+const tableName = process.env.ORG_TABLE;
 const { getItem } = require('../dynamodbQueries');
 
 exports.handler = async (event) => {
   try {
-    console.log(event.pathParameters);
-    const userId = decodeURIComponent(event.pathParameters.user_id);
+    const orgId = decodeURIComponent(event.pathParameters.orgId);
     const params = {
       TableName: tableName,
-      KeyConditionExpression: `id = :uid`,
+      KeyConditionExpression: `id = :orgId`,
       ExpressionAttributeValues: {
-        ':uid': userId,
+        ':orgId': orgId,
       },
-      Limit: 1,
     };
     const data = await getItem(params);
     return {
       statusCode: 200,
-      body: data ? JSON.stringify(data.Items[0]) : null,
+      body: JSON.stringify(data.Items[0]),
     };
   } catch (err) {
+    console.log('Error', err);
     return new Error(err);
   }
 };

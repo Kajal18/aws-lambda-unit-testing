@@ -1,18 +1,18 @@
-const tableName = process.env.USERS_TABLE;
+const tableName = process.env.ORG_TABLE;
 const { deleteItem } = require('../dynamodbQueries');
 
 exports.handler = async (event) => {
   try {
-    const user_id = event.requestContext.authorizer.claims.user.id;
+    const orgId = event.requestContext.authorizer.claims.user.orgId;
     const params = {
       TableName: tableName,
       Key: {
-        id: user_id,
+        id: orgId,
       },
     };
     const data = await deleteItem(params);
     if (!data) {
-      throw new Error('No user found');
+      throw new Error('No org found');
     }
     return {
       statusCode: 200,
@@ -21,7 +21,6 @@ exports.handler = async (event) => {
       }),
     };
   } catch (err) {
-    console.log({ err });
     return new Error(err);
   }
 };

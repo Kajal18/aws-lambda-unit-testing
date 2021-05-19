@@ -1,31 +1,32 @@
 const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
-const utils = require('./utils');
+const utils = require('../utils/utils');
 AWS.config.update({ region: 'us-east-1' });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.USERS_TABLE;
+const { getAllItem } = require('../dynamodbQueries');
 
 exports.handler = async (event) => {
   try {
-    console.log('autenticaio-------', event);
     if (!event.authorizationToken) {
       throw new Error('Missing token!');
     }
     const authToken = event.authorizationToken;
     const jwtToken = authToken.replace('Bearer ', '');
     const decoded = jwt.verify(jwtToken, 'JWT_SECRET');
+    console.log({ decoded });
     let params = {
       TableName: tableName,
-      FilterExpression: `user_id = :userId`,
+      FilterExpression: `id = :userId`,
       ExpressionAttributeValues: {
-        ':userId': decoded.user.user_id,
+        ':userId': decoded.user.id,
       },
     };
-    const userResponse = await dynamodb.scan(params).promise();
+    const userResponse = await getAllItem(params);
     if (userResponse.Items.length > 0) {
       user = userResponse.Items[0];
       const effect = 'Allow';
-      const userId = user.user_id;
+      const userId = user.id;
       const authorizerContext = { user: JSON.stringify(user) };
       const policyDocument = utils.buildIAMPolicy(
         userId,

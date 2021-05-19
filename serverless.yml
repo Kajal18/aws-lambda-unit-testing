@@ -3,17 +3,17 @@ service: dynamodb-table-serverless
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: prod
+  stage: dev
   environment:
     USERS_TABLE: user-${opt:stage,self:provider.stage}
+    ORG_TABLE: organization-${opt:stage,self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - dynamodb:Query
-        - dynamodb:PutItem
-        - dynamodb:DeleteItem
+        - dynamodb:*
       Resource:
-        - { "Fn::GetAtt": ["UsersTable", "Arn" ] }
+        - { "Fn::GetAtt": ["UserTable", "Arn" ] }
+        - { "Fn::GetAtt": ["OrgTable", "Arn" ] }
       # Resource: "arn:aws:dynamodb:${opt:region,self:provider.region}:*:table/${self:provider.environment.NOTES_TABLE}"
 
 plugins:
@@ -60,7 +60,7 @@ functions:
           cors:
             origin: '*'
             headers: ${self:custom.allowHeaders}
-         
+          authorizer: authorize
   updateUser:
     handler: usersApi/updateUser.handler
     events:
@@ -82,11 +82,61 @@ functions:
             headers: ${self:custom.allowHeaders}
           authorizer: authorize
   
+  createOrg:
+    handler: organizationApi/createOrg.handler
+    events:
+      - http:
+          path: organization
+          method: post
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+  getOrg:
+    handler: organizationApi/getOrg.handler
+    events:
+      - http:
+          path: organization/{orgId}
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  getOrgs:
+    handler: organizationApi/getAllOrg.handler
+    events:
+      - http:
+          path: organization
+          method: get
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  updateOrg:
+    handler: organizationApi/updateOrg.handler
+    events:
+      - http:
+          path: organization/{orgId}
+          method: patch
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  deleteOrg:
+    handler: organizationApi/deleteOrg.handler
+    events:
+      - http:
+          path: organization
+          method: delete
+          cors:
+            origin: '*'
+            headers: ${self:custom.allowHeaders}
+          authorizer: authorize
+  
   authorize:
     handler: usersApi/authenticate.handler
   
   authentication:
-    handler: usersApi/getToken.handler
+    handler: utils/getToken.handler
     events:
       - http:
           path: authentication
@@ -97,17 +147,32 @@ functions:
 
 resources:
   Resources:
-    UsersTable:
+    UserTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
         TableName: ${self:provider.environment.USERS_TABLE}
         AttributeDefinitions:
-          - AttributeName: user_id
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          - AttributeName: user_id
+          - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    OrgTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.ORG_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    

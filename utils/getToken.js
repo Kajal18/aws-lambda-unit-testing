@@ -8,16 +8,16 @@ const tableName = process.env.USERS_TABLE;
 exports.handler = async (event) => {
   try {
     let response;
-    const { user_name, password } = JSON.parse(event.body);
-    if (!user_name || !password) {
+    const { email, password } = JSON.parse(event.body);
+    if (!email || !password) {
       throw new Error('Missing credentials!');
     }
     const userResponseData = await dynamodb
       .scan({
         TableName: tableName,
-        FilterExpression: 'user_name= :user_name',
+        FilterExpression: 'email= :email',
         ExpressionAttributeValues: {
-          ':user_name': user_name,
+          ':email': email,
         },
       })
       .promise();
