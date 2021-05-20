@@ -21,6 +21,7 @@ exports.handler = async (event) => {
       }),
     };
   } catch (err) {
+    console.log({ err });
     return new Error(err);
   }
 };
