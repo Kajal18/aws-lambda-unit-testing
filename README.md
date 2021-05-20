@@ -48,6 +48,7 @@ Instructions on how to use them in your own application are linked below.
 | ------ | ------ |
 
 | GitHub | [github/README.md](https://github.com/Kajal18/aws-lambda-unit-testing/blob/master/README.md)
+| UML Diagram | [UML diagram](https://drive.google.com/file/d/1T_OD-Xu92wYU2lzTP5JuhscmLEOGic9V/view?usp=sharing)
 
 ## Development
 
