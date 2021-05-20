@@ -7,8 +7,10 @@
 ## Features
 
 - User CRUD operation
+- Organization CRUD operation
 - Unit testing
 - Ability to run code offline
+- UML diagram
 
 ## Tech
 
