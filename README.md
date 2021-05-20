@@ -47,7 +47,7 @@ Instructions on how to use them in your own application are linked below.
 | Plugin | README |
 | ------ | ------ |
 
-| GitHub | [github/README.md](https://github.com/Kajal18/neoastra-task/blob/master/README.md)
+| GitHub | [github/README.md](https://github.com/Kajal18/aws-lambda-unit-testing/blob/master/README.md)
 
 ## Development
 
