@@ -65,6 +65,6 @@ Design considered for
    e. coding practice for lambda is followed as, single lambda handler per API endpoint with error handling.
 
 3. Unit testing
-   a. create .env file in the root directory for test to execute properly
+   a. refer .env file in the root directory for test to execute properly
    b. already added static data in test case
    c. to run test cases, use command `npm jest`
