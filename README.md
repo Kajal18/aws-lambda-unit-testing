@@ -54,8 +54,20 @@ Instructions on how to use them in your own application are linked below.
 Design considered for
 
 1. database:
-   a. user_name : string
-   b. password: string
+   User
+      a. id: string
+      b. user_name : string
+      c. password: string
+      d. email : string
+      e. orgId: string
+      f. createdAt: string
+      g. updatedAt: string
+      
+   Organization
+      a. id: string
+      b. orgName: string
+      e. createdAt: string
+      f. updatedAt: string
 
 2. Lambda
    a. seperate lambda functions for all API endpoint
